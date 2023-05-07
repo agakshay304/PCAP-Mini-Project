@@ -24,8 +24,4 @@ Filter options are as follows:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
-
-- This project was inspired by the work of other CUDA-based image processing projects.
-- Special thanks to the developers of the CUDA toolkit for making this project possible.
 
