@@ -143,28 +143,28 @@ int main()
     // Make this kernel Call Menu Driven with 4 Filters: 1. Colour Inversion 2. Blur 3. Adjust Contrast 4.Adjust Brightness
 
     int choice;
-    printf("Enter your choice:\n 1. Colour Inversion\n 2. Blur\n 3. Adjust Contrast\n 4.Adjust Brightness\n");
+    printf("Enter your choice:\n 1. Colour Inversion\n 2. Blur\n 3. Adjust Contrast\n 4. Adjust Brightness\n");
     scanf("%d", &choice);
 
     switch (choice)
     {
     case 1:
-        colourInversion<<<ceil(size + 1024 - 1) / 1024, 1024>>>(d_buffer, d_outBuf, width, height);
+        colourInversion<<<ceil(size + 512 - 1) / 512, 512>>>(d_buffer, d_outBuf, width, height);
         break;
     case 2:
-        gaussianBlur<<<ceil(size + 1024 - 1) / 1024, 1024>>>(d_buffer, d_outBuf, width, height, 5);
+        gaussianBlur<<<ceil(size + 512 - 1) / 512, 512>>>(d_buffer, d_outBuf, width, height, 5);
         break;
     case 3:
         int cont;
-        printf("Enter contrast value: (Negative for decreasing Contrast, Positive for increasing Contrast\n)");
+        printf("Enter contrast value: (Negative for decreasing Contrast, Positive for increasing Contrast)\n");
         scanf("%d", &cont);
-        contrast<<<ceil(size + 1024 - 1) / 1024, 1024>>>(d_buffer, d_outBuf, cont);
+        contrast<<<ceil(size + 512 - 1) / 512, 512>>>(d_buffer, d_outBuf, cont);
         break;
     case 4:
         int bright;
-        printf("Enter brightness value: (Negative for darker, Positive for brighter\n)");
+        printf("Enter brightness value: (Negative for darker, Positive for brighter)\n");
         scanf("%d", &bright);
-        brightness<<<ceil(size + 1024 - 1) / 1024, 1024>>>(d_buffer, d_outBuf, bright);
+        brightness<<<ceil(size + 512 - 1) / 512, 512>>>(d_buffer, d_outBuf, bright);
         break;
     default:
         printf("Invalid Choice\n");
