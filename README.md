@@ -15,10 +15,10 @@ To use iFilter, simply run the binary with the desired input image and filter op
 
 Filter options are as follows:
 
-- `1` : Black and White
-- `2` : Sepia
-- `3` : Gaussian Blur
-- `4` : Color Inversion
+- `1` : Colour Inversion
+- `2` : Gaussian Blur
+- `3` : Adjust Contrast
+- `4` : Adjust Brightness
 
 ## License
 
