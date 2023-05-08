@@ -3,7 +3,7 @@
 #include <time.h>
 #define MAX_VALUE 255
 
-__global__ void blackwhite(unsigned char *buffer, unsigned char *outBuf)
+__global__ void brightness(unsigned char *buffer, unsigned char *outBuf, int brightness)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -11,15 +11,21 @@ __global__ void blackwhite(unsigned char *buffer, unsigned char *outBuf)
     int greenIdx = i * 3 + 1;
     int blueIdx = i * 3 + 2;
 
-    // conversion formula of rgb to gray
-    int y = (buffer[redIdx] * 0.3) + (buffer[greenIdx] * 0.59) + (buffer[blueIdx] * 0.11);
+    int r = buffer[redIdx] + brightness;
+    int g = buffer[greenIdx] + brightness;
+    int b = buffer[blueIdx] + brightness;
 
-    outBuf[redIdx] = y;
-    outBuf[blueIdx] = y;
-    outBuf[greenIdx] = y;
+    // clamp values to the valid range of [0, 255]
+    r = min(max(r, 0), 255);
+    g = min(max(g, 0), 255);
+    b = min(max(b, 0), 255);
+
+    outBuf[redIdx] = r;
+    outBuf[greenIdx] = g;
+    outBuf[blueIdx] = b;
 }
 
-__global__ void sepia(unsigned char *buffer, unsigned char *outBuf)
+__global__ void contrast(unsigned char *buffer, unsigned char *outBuf, float contrast)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -27,13 +33,18 @@ __global__ void sepia(unsigned char *buffer, unsigned char *outBuf)
     int greenIdx = i * 3 + 1;
     int blueIdx = i * 3 + 2;
 
-    // conversion formula of rgb to sepia
-    float r = buffer[redIdx];
-    float g = buffer[greenIdx];
-    float b = buffer[blueIdx];
-    outBuf[redIdx] = min(255.0f, r * 0.393f + g * 0.769f + b * 0.189f);
-    outBuf[greenIdx] = min(255.0f, r * 0.349f + g * 0.686f + b * 0.168f);
-    outBuf[blueIdx] = min(255.0f, r * 0.272f + g * 0.534f + b * 0.131f);
+    float r = ((float)buffer[redIdx] / 255.0 - 0.5) * contrast + 0.5;
+    float g = ((float)buffer[greenIdx] / 255.0 - 0.5) * contrast + 0.5;
+    float b = ((float)buffer[blueIdx] / 255.0 - 0.5) * contrast + 0.5;
+
+    // clamp values to the valid range of [0, 255]
+    r = min(max(r, 0.0f), 1.0f) * 255.0f;
+    g = min(max(g, 0.0f), 1.0f) * 255.0f;
+    b = min(max(b, 0.0f), 1.0f) * 255.0f;
+
+    outBuf[redIdx] = (unsigned char)r;
+    outBuf[greenIdx] = (unsigned char)g;
+    outBuf[blueIdx] = (unsigned char)b;
 }
 
 __global__ void gaussianBlur(unsigned char *buffer, unsigned char *outBuf, int width, int height, int kernelSize)
@@ -88,7 +99,7 @@ __global__ void colourInversion(unsigned char *buffer, unsigned char *outBuf, in
 
 int main()
 {
-    FILE *fIn = fopen("input.bmp", "rb");    // Input File name
+    FILE *fIn = fopen("snail.bmp", "rb");    // Input File name
     FILE *fOut = fopen("output.bmp", "wb+"); // Output File name
 
     unsigned char byte[54];
@@ -129,32 +140,36 @@ int main()
 
     cudaMemcpy(d_buffer, buffer, size * 3, cudaMemcpyHostToDevice);
 
-    // Make this kernel Call Menu Driven with 4 Filters: Black and White, Sepia, Blur, Sharpen
+    // Make this kernel Call Menu Driven with 4 Filters: 1. Colour Inversion 2. Blur 3. Adjust Contrast 4.Adjust Brightness
 
     int choice;
-    printf("Enter your choice:\n1. Black and White\n2. Sepia\n3. Blur\n4. Colour Inversion\n");
+    printf("Enter your choice:\n 1. Colour Inversion\n 2. Blur\n 3. Adjust Contrast\n 4.Adjust Brightness\n");
     scanf("%d", &choice);
 
     switch (choice)
     {
     case 1:
-        blackwhite<<<ceil(size + 1024 - 1) / 1024, 1024>>>(d_buffer, d_outBuf);
+        colourInversion<<<ceil(size + 1024 - 1) / 1024, 1024>>>(d_buffer, d_outBuf, width, height);
         break;
     case 2:
-        sepia<<<ceil(size + 1024 - 1) / 1024, 1024>>>(d_buffer, d_outBuf);
-        break;
-    case 3:
         gaussianBlur<<<ceil(size + 1024 - 1) / 1024, 1024>>>(d_buffer, d_outBuf, width, height, 5);
         break;
+    case 3:
+        int cont;
+        printf("Enter contrast value: (Negative for decreasing Contrast, Positive for increasing Contrast\n)");
+        scanf("%d", &cont);
+        contrast<<<ceil(size + 1024 - 1) / 1024, 1024>>>(d_buffer, d_outBuf, cont);
+        break;
     case 4:
-        colourInversion<<<ceil(size + 1024 - 1) / 1024, 1024>>>(d_buffer, d_outBuf, width, height);
+        int bright;
+        printf("Enter brightness value: (Negative for darker, Positive for brighter\n)");
+        scanf("%d", &bright);
+        brightness<<<ceil(size + 1024 - 1) / 1024, 1024>>>(d_buffer, d_outBuf, bright);
         break;
     default:
         printf("Invalid Choice\n");
         return 0;
     }
-
-    // blackwhite<<<ceil(size + 1024 - 1) / 1024, 1024>>>(d_buffer, d_outBuf);
 
     cudaMemcpy(outBuf, d_outBuf, size * 3, cudaMemcpyDeviceToHost);
 
