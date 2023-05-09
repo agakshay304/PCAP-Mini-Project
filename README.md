@@ -2,7 +2,7 @@
 
 # iFilter
 
-iFilter is a CUDA-based image processing project that allows users to apply various filters to their images. With iFilter, you can convert your images to black and white, sepia, or apply a Gaussian blur. Additionally, you can invert the colors of your image to create a unique effect. This project is designed to take advantage of the power of CUDA-enabled GPUs to provide fast and efficient image processing.
+iFilter is a CUDA-based image processing project that allows users to apply various filters to their images. With iFilter, you can edit your images by applying Gaussian Blur, adjusting Contrast and adjusting Brightness. Additionally, you can invert the colors of your image to create a unique effect. This project is designed to take advantage of the power of CUDA-enabled GPUs to provide fast and efficient image processing.
 
 ## Installation
 
