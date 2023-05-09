@@ -50,7 +50,7 @@ __global__ void contrast(unsigned char *buffer, unsigned char *outBuf, float con
 __global__ void gaussianBlur(unsigned char *buffer, unsigned char *outBuf, int width, int height, int kernelSize)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
-
+    //gaussian blur
     int redIdx = i * 3;
     int greenIdx = i * 3 + 1;
     int blueIdx = i * 3 + 2;
